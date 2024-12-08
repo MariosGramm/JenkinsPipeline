@@ -22,9 +22,9 @@ pipeline {
 
             stage('InitPlan'){           //Terraform init + plan + tfplan.txt file
                 steps{
-                    sh 'pwd; cd terraform/ ; terraform init'
-                    sh 'pwd; cd terraform/ ; terraform plan - out tfplan'
-                    sh 'pwd; cd terraform/ ; terraform show -no-color tfplan > tfplan.txt'
+                    bat 'pwd; cd terraform/ ; terraform init'
+                    bat 'pwd; cd terraform/ ; terraform plan - out tfplan'
+                    bat 'pwd; cd terraform/ ; terraform show -no-color tfplan > tfplan.txt'
                 }
 
             }
@@ -47,7 +47,7 @@ pipeline {
 
             stage('Apply'){         //Terraform apply  
                 steps{
-                    sh 'pwd;cd terraform/ ; terraform apply -input=false tfplan'
+                    bat 'pwd;cd terraform/ ; terraform apply -input=false tfplan'
                 }
             }
         }
