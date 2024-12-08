@@ -4,27 +4,29 @@ pipeline {
     }
     environment {
         AWS_ACCESS_KEY_ID     = credentials('AWS_ACCESS_KEY_ID')
-        AWS_SECRET_KEY = credentials('AWS_SECRET_KEY')
+        AWS_SECRET_ACCESS_KEY = credentials('AWS_SECRET_KEY') 
+        AWS_REGION            = 'us-east-1' 
     }
     agent any
     stages {
-        stage('Checkout') {                 //Terraform code retrieval 
+        stage('Checkout') { // Terraform code retrieval
             steps {
                 dir("terraform") {
                     git branch: 'main', url: "https://github.com/MariosGramm/MyFirstPipeline.git"
                 }
             }
         }
-        stage('InitPlan') {                //Terraform init + plan + tfplan.txt file
+        stage('InitPlan') { // Terraform init + plan + tfplan.txt file
             steps {
                 dir('terraform') {
                     bat 'terraform init'
-                    bat 'terraform plan -out=tfplan'
+                    // Παράμετροι για AWS region και credentials
+                    bat 'terraform plan -var="aws_region=%AWS_REGION%" -var="aws_access_key=%AWS_ACCESS_KEY_ID%" -var="aws_secret_key=%AWS_SECRET_ACCESS_KEY%" -out=tfplan'
                     bat 'terraform show -no-color tfplan > tfplan.txt'
                 }
             }
         }
-        stage('Approval') {              //Αν ο χρήστης δεν έχει επιλέξει autoApprove
+        stage('Approval') { // Manual approval if autoApprove is false
             when {
                 not {
                     equals expected: true, actual: params.autoApprove
@@ -38,7 +40,7 @@ pipeline {
                 }
             }
         }
-        stage('Apply') {                //Terraform apply
+        stage('Apply') { // Terraform apply
             steps {
                 dir('terraform') {
                     bat 'terraform apply -input=false tfplan'
